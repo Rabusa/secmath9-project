@@ -29,93 +29,94 @@ library(broom)
 library(here)
 
 # load the data
-df <- read_csv(here("data", "Financial Stability Survey.csv"))
+df <- read_csv(here("Data", "my_dataset.csv"))
 
 df <- df |>
   mutate(
-    Mode of Transportation = factor(
-      Mode of Transportation, 
-      levels = c("Walking", "Owned", "Not Owned"), 
+    `Mode of Transportation` = factor(
+     `Mode of Transportation`, 
+      levels = c("Walking", "Public Commute", "Private Vehicle (Owned car/motorcycle)"), 
       ordered = TRUE
     )
   ) |>
   select(
-    Allowance Sufficiency Level,
-    Mode of Transportation,
+    allowance = `Allowance Sufficiency Level`,
+    transport = `Mode of Transportation`,
   )
 ```
 
-## The Titanic Data Set
+## The Financial Stability Data Set
 
-The `Titanic_full` data set of the [{ggstatsplot}]{style="font-family:monospace;"} package is a data frame with 2201 rows and 5 variables.
+The Financial Stability Survey data set (`my_dataset.csv`) is a data frame with 68 observations and 2 categorical variables:
 
-- `id` Dummy identity number for each person.
+- `Allowance Sufficiency Level` The respondent's perceived sufficiency of their allowance (`Sufficient`, `Enough`, `Insufficient`).
+- `Mode of Transportation` The primary mode of transportation used by the respondent (`Walking`, `Public Commute`, or `Private Vehicle (Owned car/motorcycle)`).
 
-- `Class` 1st, 2nd, 3rd, Crew.
+This data set provides information on students' allowance sufficiency levels and their primary modes of transportation.
 
-- `Sex` Male, Female.
+The first 6 rows of the financial stability survey data set are shown in @tbl-survey.
 
-- `Age` Child, Adult.
-
-- `Survived` No, Yes.
-
-This data set provides information on the fate of passengers on the fatal maiden voyage of the ocean liner Titanic, summarized according to economic status (class), sex, age and survival.
-
-The first 6 rows of the titanic data set are shown in @tbl-titanic.
 
 ```{r}
-#| label: tbl-titanic
+#| label: tbl-survey
 #| warning: false
 #| message: false
 #| tbl-cap: "The first 6 observations of the data set."
 
-titanic |>
+df |>
   head() |> # getting the first six rows of the data
-  kable() # creating a table
+  kable(col.names = c("Allowance Sufficiency Level", "Mode of Transportation")) # creating a table
 ```
 
 ## Descriptive Statistics
 
-The frequency distribution of `Survived` when grouped according to `Sex` is shown in @tbl-summary. Most of the passengers are male. The majority of female passengers survived, whereas the majority of male passengers did not. Nonetheless, the number of survived passengers for both female and male are close, that is 344 and 367 respectively.
+The frequency distribution of `Allowance Sufficiency Level` when grouped according to `Mode of Transportation` is shown in @tbl-summary. Most of the respondents rely on Public Commute as their primary mode of transportation, accounting for 35 (51%) of the 68 total respondents, followed by Walking with 18 (26%) and Private Vehicle with 15 (22%). Across allowance sufficiency levels, the largest group of respondents reported having enough allowance (37 respondents), with nearly half of them using public commute (17 respondents, 46%).
+
 
 ```{r}
 #| label: tbl-summary
-#| tbl-cap: "Summary statistics of `Survived` when grouped according to `Sex`."
+#| tbl-cap: "Summary statistics of `Allowance Sufficiency Level` when grouped according to `Mode of Transportation`."
 #| message: false
 
-titanic |> 
-  tbl_summary(
-    by = Sex,
-    include = Survived
+df |>
+  tbl_cross(
+    row = transport,
+    col = allowance,
+    label = list(
+      transport ~ "Mode of Transportation",
+      allowance ~ "Allowance Sufficiency Level"
+    ),
+    percent = "column",
+    margin = c("row", "column")
   )
 ```
 
 # Hypothesis Testing
-
 ## Research Question
 
-Does a passenger's sex affect their survival status?
+Does a student's allowance sufficiency level significantly associate with their chosen mode of transportation?
 
 ## Hypothesis and Test Statistics
 
-- $H_0:p_{Survived}-p_{Sex}=0$; passenger's sex does not affect their survival status.
+- $H_0:p_{transport}-p_{allowance}=0$; a student's chosen mode of transportation does not affect their allowance sufficiency level.
 
-- $H_a:p_{Survived}-p_{Sex}\ne0$; passenger's sex affects their survival status.
+- $H_a:p_{transport}-p_{allowance}\ne0$; a student's chosen mode of transportation affects their allowance sufficiency level.
 
-- Significance level, $\alpha=5\%$.
+- Significance level, $\alpha=5\%\, \text{or p-value}\, \le.05$.
 
 - **Pearson's** $\chi^2$-test of independence
 
 - Independence.
 
-- Expected counts: all expected counts are $\ge5$ (see @tbl-expected).
+- Expected counts: This study applies **Pearson's** $\chi^2$-test of independence to examine the association between mode of transportation and allowance sufficiency level. Each survey response represents an independent individual, meeting the independence requirement. As shown in @tbl-expected, not all expected counts reach at least $\ge5$, meaning a few cells have small sample sizes.
 
 ```{r}
 #| label: tbl-expected
 #| tbl-cap: Expected counts.
+#| warning: false
 
 # Create contingency table
-observed <- table(titanic$Survived, titanic$Sex)
+observed <- table(df$transport, df$allowance)
 
 # Perform chi-squared test
 chi_test <- chisq.test(observed)
@@ -125,13 +126,10 @@ expected <- chi_test$expected
 
 # View expected counts
 expected |>
-  as_tibble() |>
-  mutate(
-    " " = c("No", "Yes")
-  ) |>
-  relocate(" ", .before = 1) |>
-  mutate(across(where(is.numeric), ~ round(.x, 2))) |>
-  kable()
+  as.data.frame.matrix() |>
+  tibble::rownames_to_column(var = "Mode of Transportation") |>
+  dplyr::mutate(dplyr::across(where(is.numeric), ~ round(.x, 2))) |>
+  knitr::kable()
 ```
 
 ## Results and Interpretation
@@ -141,15 +139,19 @@ The bar chart and test statistics are shown on @fig-test.
 ```{r}
 #| label: fig-test
 #| fig-cap: Pie chart and test statistics.
-#| fig-height: 3
+#| fig-height: 5
+#| fig-width: 7
 
 ggbarstats(
-  data = titanic,
-  x = Survived,
-  y = Sex,
+  data = df,
+  x = transport,
+  y = allowance,
   bf.message = FALSE,
-  legend.title = "Survived?"
-)
+  xlab = "Allowance Sufficiency Level",
+  legend.title = "Mode of Transportation"
+) +
+  ggplot2::scale_x_discrete(labels = scales::label_wrap(18))
 ```
 
-Based on the bar chart and the *p*-value being lesser than 5% (*p*-value = .001), we reject the null hypothesis. There is a strong evidence that passenger's sex affects their survival status. Additionally, for both females and males, the survival rates were significantly different than 50% as indicated by a goodness of fit test for each gender.
+Based on the bar chart in @fig-test and the $p-value$ being less than $5\%$ ($\chi^2(4) = 13.35$, $p-value = 0.0097$, Cramér's $V = 0.27$), we reject the null hypothesis. There is significant evidence that a student's mode of transportation is associated with their allowance sufficiency level. Specifically, as shown in @fig-test, students who reported having insufficient allowance predominantly relied on public commute ($88\%$), whereas those with sufficient allowance were more evenly distributed across walking ($40\%$), private vehicles ($33\%$), and public commute ($27\%$).
+
