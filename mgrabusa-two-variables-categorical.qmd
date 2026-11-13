@@ -15,7 +15,7 @@ cache: true
 # The Data
 
 ```{r}
-#| label: preliminaries
+#| label: data
 #| warning: false
 #| message: false
 
@@ -26,18 +26,38 @@ library(gtsummary)
 library(ggstatsplot)
 library(downlit)
 library(broom)
+library(here)
 
 # load the data
-survey_data <- read_csv("Financial Stability Survey.csv")
+df <- read_csv(here("data", "Financial Stability Survey.csv"))
+
+df <- df |>
+  mutate(
+    Mode of Transportation = factor(
+      Mode of Transportation, 
+      levels = c("Walking", "Owned", "Not Owned"), 
+      ordered = TRUE
+    )
+  ) |>
+  select(
+    Allowance Sufficiency Level,
+    Mode of Transportation,
+  )
 ```
 
 ## The Titanic Data Set
 
-The `Titanic_full` data set of the [{ggstatsplot}]{style="font-family:monospace;"} package is a data frame with 68 rows and 2 variables.
+The `Titanic_full` data set of the [{ggstatsplot}]{style="font-family:monospace;"} package is a data frame with 2201 rows and 5 variables.
 
-- `Mode of Trasnportation` Walking, Owned, Not Owned.
+- `id` Dummy identity number for each person.
 
-- `Allowance Sufficieny Level` Sufficient, Enough, Insufficient.
+- `Class` 1st, 2nd, 3rd, Crew.
+
+- `Sex` Male, Female.
+
+- `Age` Child, Adult.
+
+- `Survived` No, Yes.
 
 This data set provides information on the fate of passengers on the fatal maiden voyage of the ocean liner Titanic, summarized according to economic status (class), sex, age and survival.
 
