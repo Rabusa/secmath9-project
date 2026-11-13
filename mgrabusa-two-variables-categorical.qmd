@@ -47,7 +47,7 @@ df <- df |>
 
 ## The Financial Stability Data Set
 
-The Financial Stability Survey data set (`my_dataset.csv`) is a data frame with 68 observations and 2 categorical variables:
+The Financial Stability Survey data set (`my_dataset.csv`) contains responses from 68 student respondents across 2 categorical variables:
 
 - `Allowance Sufficiency Level` The respondent's perceived sufficiency of their allowance (`Sufficient`, `Enough`, `Insufficient`).
 - `Mode of Transportation` The primary mode of transportation used by the respondent (`Walking`, `Public Commute`, or `Private Vehicle (Owned car/motorcycle)`).
@@ -55,7 +55,6 @@ The Financial Stability Survey data set (`my_dataset.csv`) is a data frame with 
 This data set provides information on students' allowance sufficiency levels and their primary modes of transportation.
 
 The first 6 rows of the financial stability survey data set are shown in @tbl-survey.
-
 
 ```{r}
 #| label: tbl-survey
@@ -71,7 +70,6 @@ df |>
 ## Descriptive Statistics
 
 The frequency distribution of `Allowance Sufficiency Level` when grouped according to `Mode of Transportation` is shown in @tbl-summary. Most of the respondents rely on Public Commute as their primary mode of transportation, accounting for 35 (51%) of the 68 total respondents, followed by Walking with 18 (26%) and Private Vehicle with 15 (22%). Across allowance sufficiency levels, the largest group of respondents reported having enough allowance (37 respondents), with nearly half of them using public commute (17 respondents, 46%).
-
 
 ```{r}
 #| label: tbl-summary
@@ -92,6 +90,7 @@ df |>
 ```
 
 # Hypothesis Testing
+
 ## Research Question
 
 Does a student's allowance sufficiency level significantly associate with their chosen mode of transportation?
@@ -154,4 +153,3 @@ ggbarstats(
 ```
 
 Based on the bar chart in @fig-test and the $p-value$ being less than $5\%$ ($\chi^2(4) = 13.35$, $p-value = 0.0097$, Cramér's $V = 0.27$), we reject the null hypothesis. There is significant evidence that a student's mode of transportation is associated with their allowance sufficiency level. Specifically, as shown in @fig-test, students who reported having insufficient allowance predominantly relied on public commute ($88\%$), whereas those with sufficient allowance were more evenly distributed across walking ($40\%$), private vehicles ($33\%$), and public commute ($27\%$).
-
