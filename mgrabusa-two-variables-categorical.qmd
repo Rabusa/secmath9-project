@@ -33,29 +33,29 @@ df <- read_csv(here("Data", "my_dataset.csv"))
 
 df <- df |>
   mutate(
-    `Mode of Transportation` = factor(
+    `Mode` = factor(
      `Mode of Transportation`, 
       levels = c("Walking", "Public Commute", "Private Vehicle (Owned car/motorcycle)"), 
       ordered = TRUE
     )
   ) |>
   select(
-    allowance = `Allowance Sufficiency Level`,
-    transport = `Mode of Transportation`,
+    sufficiency = `Allowance Sufficiency Level`,
+    Mode = `Mode of Transportation`,
   )
 ```
 
-## The Financial Stability Data Set
+## Transportation and Allowance Sufficiency Data Set
 
-The Financial Stability Survey data set (`my_dataset.csv`) contains responses from 68 student respondents across 2 categorical variables:
+The data was collected from a student survey examining mode of transportation and self-reported allowance sufficiency levels.
 
-- `Allowance Sufficiency Level` The respondent's perceived sufficiency of their allowance (`Sufficient`, `Enough`, `Insufficient`).
+A data frame with 68 observations on 2 categorical variables.
 
-- `Mode of Transportation` The primary mode of transportation used by the respondent (`Walking`, `Public Commute`, or `Private Vehicle (Owned car/motorcycle)`).
+- `sufficiency` Sufficient, Enough, Insufficient.
 
-This data set provides information on students' allowance sufficiency levels and their primary modes of transportation.
+- `Mode` Walking, Public Commute, Private Vehicle.
 
-The first 6 rows of the financial stability survey data set are shown in @tbl-survey.
+The first 6 rows of the data set are shown in @tbl-survey.
 
 ```{r}
 #| label: tbl-survey
@@ -70,20 +70,20 @@ df |>
 
 ## Descriptive Statistics
 
-The frequency distribution of `Allowance Sufficiency Level` when grouped according to `Mode of Transportation` is shown in @tbl-summary. Most of the respondents rely on Public Commute as their primary mode of transportation, accounting for 35 (51%) of the 68 total respondents, followed by Walking with 18 (26%) and Private Vehicle with 15 (22%). Across allowance sufficiency levels, the largest group of respondents reported having enough allowance (37 respondents), with nearly half of them using public commute (17 respondents, 46%).
+The frequency distribution of `sufficiency`(Allowance Sufficiency Level) when grouped according to `Mode`(Mode of Transportation) is shown in @tbl-summary. Most of the respondents rely on Public Commute as their primary mode of transportation, accounting for 35 (51%) of the 68 total respondents, followed by Walking with 18 (26%) and Private Vehicle with 15 (22%). Across allowance sufficiency levels, the largest group of respondents reported having enough allowance (37 respondents), with nearly half of them using public commute (17 respondents, 46%).
 
 ```{r}
 #| label: tbl-summary
-#| tbl-cap: "Summary statistics of `Allowance Sufficiency Level` when grouped according to `Mode of Transportation`."
+#| tbl-cap: "Summary statistics of `sufficiency` when grouped according to `Mode`."
 #| message: false
 
 df |>
   tbl_cross(
-    row = transport,
-    col = allowance,
+    row = Mode,
+    col = sufficiency,
     label = list(
-      transport ~ "Mode of Transportation",
-      allowance ~ "Allowance Sufficiency Level"
+      Mode ~ "Mode of Transportation",
+      sufficiency ~ "Allowance Sufficiency Level"
     ),
     percent = "column",
     margin = c("row", "column")
@@ -98,9 +98,9 @@ Does a student's allowance sufficiency level significantly associate with their 
 
 ## Hypothesis and Test Statistics
 
-- $H_0:p_{transport}-p_{allowance}=0$; a student's chosen mode of transportation does not affect their allowance sufficiency level.
+- $H_0:p_{Mode}-p_{sufficiency}=0$; a student's chosen mode of transportation does not affect their allowance sufficiency level.
 
-- $H_a:p_{transport}-p_{allowance}\ne0$; a student's chosen mode of transportation affects their allowance sufficiency level.
+- $H_a:p_{Mode}-p_{sufficiency}\ne0$; a student's chosen mode of transportation affects their allowance sufficiency level.
 
 - Significance level, $\alpha=5\%\, \text{or p-value}\, \le.05$.
 
@@ -116,7 +116,7 @@ Does a student's allowance sufficiency level significantly associate with their 
 #| warning: false
 
 # Create contingency table
-observed <- table(df$transport, df$allowance)
+observed <- table(df$Mode, df$sufficiency)
 
 # Perform chi-squared test
 chi_test <- chisq.test(observed)
@@ -144,8 +144,8 @@ The bar chart and test statistics are shown on @fig-test.
 
 ggbarstats(
   data = df,
-  x = transport,
-  y = allowance,
+  x = Mode,
+  y = sufficiency,
   bf.message = FALSE,
   xlab = "Allowance Sufficiency Level",
   legend.title = "Mode of Transportation"
