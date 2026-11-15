@@ -50,6 +50,7 @@ df <- df |>
 The Financial Stability Survey data set (`my_dataset.csv`) contains responses from 68 student respondents across 2 categorical variables:
 
 - `Allowance Sufficiency Level` The respondent's perceived sufficiency of their allowance (`Sufficient`, `Enough`, `Insufficient`).
+
 - `Mode of Transportation` The primary mode of transportation used by the respondent (`Walking`, `Public Commute`, or `Private Vehicle (Owned car/motorcycle)`).
 
 This data set provides information on students' allowance sufficiency levels and their primary modes of transportation.
