@@ -1,6 +1,6 @@
 ---
 title: "Two Variables: Both Quantitative"
-author: Orville D. Hombrebueno
+author: Mica G. Rabusa
 date: today
 format:
   html:
@@ -15,7 +15,7 @@ cache: true
 # The Data
 
 ```{r}
-#| label: preliminaries
+#| label: data
 #| warning: false
 #| message: false
 
@@ -27,65 +27,63 @@ library(gtsummary)
 library(ggstatsplot)
 library(downlit)
 library(broom)
+library(here)
 
 # load data
-data(mtcars)
+df <- read_csv(here("Data", "my_dataset.csv"))
+
+df <- df |>
+  mutate(
+    `stress` = factor(
+     `Financial Stress Rating`, 
+      levels = c("[ 1 ] Low Stress (Rarely worry about money for school)", "[ 2 ] Moderate Stress (Sometimes worry about managing expenses)", "[ 3 ] High Stress (Constantly worry or struggle with school expenses)"), 
+      ordered = TRUE
+    )
+  ) |>
+  select(
+    stress = `Financial Stress Rating`,
+    daily = `Daily Allowance`,
+  )
 ```
 
-## Motor Trend Car Road Tests
+## Financial Stress and Daily Allowance Dataset
 
-The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).
+The data was collected from a student survey examining daily spending budgets and self-reported financial stress levels.
 
-A data frame with 32 observations on 11 (numeric) variables.
+A data frame with 68 observations on 2 numerical variables.
 
--   `mpg` Miles/(US) gallon
+- `stress` Low Stress, Moderate Stress, High Stress.
 
--   `cyl` Number of cylinders
+- `daily` Daily Allowance in PHP
 
--   `disp` Displacement (cu.in.)
-
--   `hp` Gross horsepower
-
--   `drat` Rear axle ratio
-
--   `wt` Weight (1000 lbs)
-
--   `qsec` 1/4 mile time
-
--   `vs` Engine (0 = V-shaped, 1 = straight)
-
--   `am` Transmission (0 = automatic, 1 = manual)
-
--   `gear` Number of forward gears
-
--   `carb` Number of carburetors
-
-The first 6 rows of the data set are shown in @tbl-mtcars
+The first 6 rows of the data set are shown in @tbl-survey
 
 ```{r}
-#| label: tbl-mtcars
+#| label: tbl-survey
 #| warning: false
 #| message: false
 #| error: false
 #| tbl-cap: "The first 6 observations of the data set."
 
-mtcars |> # call the data
+df |> 
   head() |> # get the first six rows of the data
-  kable() # create a table
+  kable(col.names = c("Financial Stress Rating", "Daily Allowance")) # create a table
 ```
 
 ## Descriptive Statistics
 
-The mean, standard deviation, minimum, and maximum of `hp` and `mpg` in the `mtcars` data set are shown in @tbl-summary. There is a total of 32 observations.
+The mean, standard deviation, minimum, and maximum of `stress`(Financial Stress Rating) and `daily`(Daily Allowance) in the data set are shown in @tbl-summary. There is a total of 68 observations.
 
 ```{r}
 #| label: tbl-summary
-#| tbl-cap: "Summary statistics of the data set."
+#| tbl-cap: "Summary statistics of `daily` when grouped according to `stress`."
 #| message: false
 
-mtcars |> # call the data
+df |> # call the data
   tbl_summary( # create a table
-    include = c(mpg, hp), # select variables
+    by = stress, # group by Financial Stress Rating
+    include = daily, # select numerical variable
+    label = list(daily ~ "Daily Allowance"), # clean row label
     statistic = all_continuous() ~ "{mean} ± {sd} ({min} - {max})", # descriptive statistics
     digits = all_continuous() ~ 2 # no. of digits (rounding)
   )
@@ -95,39 +93,43 @@ mtcars |> # call the data
 
 ## Research Question
 
-Is there a significant relationship between gross horsepower and miles/(US) gallon?
+Is there a significant difference in daily allowance across the three financial stress rating levels (Low Stress, Moderate Stress, and High Stress)?
 
 ## Hypothesis and Test Statistics
 
--   $H_0:\rho=0$; there is no linear relationship between gross horsepower and miles/(US) gallon.
+- $H_0$: The distribution (median) of daily allowance is the same across all three financial stress rating levels.
 
--   $H_a:\rho\ne0$; there is a linear relationship between gross horsepower and miles/(US) gallon.
+- $H_a$: At least one financial stress rating level has a different daily allowance distribution (median).
 
--   Significance level, $\alpha=5\%$.
+- **Test Statistic:** Kruskal-Wallis $H$ test (or $\chi^2$ approximation) at $\alpha = 0.05$.
 
--   **Pearson correlation**
+- **Kruskal-Wallis test** (non-parametric test comparing medians across 3 independent groups)
 
--   $n>30$; large sample.
+- Independent observations across the three financial stress rating groups ($n = 68$).
 
 ## Results and Interpretation
 
-The scatter plot and test statistics is shown on @fig-test.
+The box plot and test statistics are shown in @fig-test.
 
 ```{r}
 #| label: fig-test
-#| fig-cap: Scatter plot and test statistics.
-#| fig-height: 3
+#| fig-cap: Box plot of daily allowance across financial stress ratings with Kruskal-Wallis test results.
+
+#| fig-height: 5
 #| warning: false
 #| error: false
 #| message: false
 
-ggscatterstats(
-  mtcars, hp, mpg,
-  xlab = "Gross Horsepower",
-  ylab = "Miles/(US) Gallon",
-  type = "parametric"
+ggbetweenstats(
+  data = df,
+  x = stress,
+  y = daily,
+  type = "nonparametric", 
+  xlab = "Financial Stress Rating",
+  ylab = "Daily Allowance"
 ) +
-  labs(caption = NULL) # remove caption
+  scale_x_discrete(labels = c("Low Stress", "Moderate Stress", "High Stress")) +
+  labs(caption = NULL)
 ```
 
-Based on the scatter plot and the *p*-value being less than 5% (*p*-value = .001), we reject the null hypothesis. There is strong evidence of a linear relationship between gross horsepower and miles/(US) gallon. The correlation ($\rho=-0.78$) suggests a moderate negative relationship between the two variables. Increased gross horsepower is moderately associated with decreased miles/(US) gallon.
+Based on the box plot and the *p*-value being less than 5% (*p*-value = $8.89 \times 10^{-4}$, $\chi^2_{\text{Kruskal-Wallis}}(2) = 14.05$), we reject the null hypothesis. There is strong evidence of a significant difference in daily allowance across the three financial stress rating levels ($\hat{\varepsilon}^2_{\text{ordinal}} = 0.21$, indicating a moderate-to-large effect size). Specifically, median daily allowance decreases as financial stress increases, dropping from 225.00 in the Low Stress group ($n = 10$) to 150.00 in the Moderate Stress group ($n = 42$) and 100.00 in the High Stress group ($n = 16$).
